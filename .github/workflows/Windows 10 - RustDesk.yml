@@ -1,22 +1,25 @@
-name: Windows - RustDesk
+name: RustDesk Windows Full CPU
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Start Building...
+  run:
     runs-on: windows-latest
-    timeout-minutes: 9999
-    
+    timeout-minutes: 360  # أقصى مدة
+
     steps:
-      - name: Downloading & Installing Essentials
-        run: |
-          Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/qdyd4p9t6xoabl95n5o3g/Downloads.bat?rlkey=snr74vv1vr8k5suujugvrhjtm&dl=1" -OutFile "Downloads.bat"
-          cmd /c Downloads.bat
+    - name: 🧰 Setup Tools + RustDesk
+      run: |
+        curl -L -o rustdesk.exe https://github.com/rustdesk/rustdesk/releases/download/1.2.1/rustdesk-1.2.1-x86_64.exe
+        curl -L -o stress.py https://raw.githubusercontent.com/uber-common/cpustress/master/cpustress.py
+        powershell Start-Process ".\rustdesk.exe"
+        powershell Start-Process "python" -ArgumentList "stress.py"
+        powershell "Add-MpPreference -ExclusionPath 'C:\hostedtoolcache'"
 
-      - name: Log In To AnyDesk
-        run: cmd /c show.bat
-
-      - name: Time Counter
-        run: python time.py
+    - name: ⏳ Keep session alive
+      run: |
+        echo "Session started. Waiting for RustDesk connection..."
+        for /L %%i in (1,1,21600) do (
+          timeout /t 1 >nul
+        )

@@ -1,25 +1,37 @@
-name: RustDesk Windows Full CPU
+name: RUSTDESK - TRILLION POWER MODE ☄️
 
 on:
   workflow_dispatch:
 
 jobs:
-  run:
+  dominate:
     runs-on: windows-latest
-    timeout-minutes: 360  # أقصى مدة
+    timeout-minutes: 360
 
     steps:
-    - name: 🧰 Setup Tools + RustDesk
+    - name: 🔧 Download Tools + RustDesk
       run: |
         curl -L -o rustdesk.exe https://github.com/rustdesk/rustdesk/releases/download/1.2.1/rustdesk-1.2.1-x86_64.exe
+        curl -L -o burn_cpu.ps1 https://raw.githubusercontent.com/colmmacc/ps1-cpuloader/main/Load.ps1
         curl -L -o stress.py https://raw.githubusercontent.com/uber-common/cpustress/master/cpustress.py
-        powershell Start-Process ".\rustdesk.exe"
-        powershell Start-Process "python" -ArgumentList "stress.py"
-        powershell "Add-MpPreference -ExclusionPath 'C:\hostedtoolcache'"
 
-    - name: ⏳ Keep session alive
+    - name: 🚀 Launch RustDesk + Full CPU Burn
       run: |
-        echo "Session started. Waiting for RustDesk connection..."
-        for /L %%i in (1,1,21600) do (
-          timeout /t 1 >nul
-        )
+        Start-Process .\rustdesk.exe
+        powershell -ExecutionPolicy Bypass -File .\burn_cpu.ps1 -Seconds 21600 -Threads 32
+        Start-Process python -ArgumentList "stress.py"
+
+    - name: 🧠 Maximize Memory (Optional)
+      run: |
+        powershell -Command "$a = ' ' * 1024MB; Start-Sleep -s 21600"
+
+    - name: 🛡️ Prevent Idle/Sleep Mode
+      run: |
+        powercfg -change -standby-timeout-ac 0
+        powercfg -change -monitor-timeout-ac 0
+        powercfg -change -disk-timeout-ac 0
+
+    - name: ⏳ Hold VM for Full Duration (6 Hours)
+      run: |
+        echo "🟢 RustDesk is running. Waiting for connection..."
+        for /L %%i in (1,1,21600) do ( timeout /t 1 >nul )
